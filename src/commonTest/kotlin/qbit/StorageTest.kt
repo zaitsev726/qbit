@@ -1,15 +1,14 @@
 package qbit
 
 import io.ktor.client.HttpClient
+import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.request.*
 import io.ktor.client.response.HttpResponse
 import io.ktor.client.response.readBytes
-import io.ktor.content.ByteArrayContent
-import io.ktor.http.Url
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import qbit.model.toStr
 import qbit.ns.Key
 import qbit.ns.Namespace
 import qbit.platform.Files
@@ -59,7 +58,11 @@ class StorageTest {
     @Test
     fun yandexDiskStorageSubNamespaces(){
         val job = GlobalScope.launch {
-            val client = HttpClient()
+            val client = HttpClient() {
+                install(JsonFeature) {
+                    serializer = KotlinxSerializer()
+                }
+            }
             val response = client.get<String>("https://cloud-api.yandex.net:443/v1/disk/resources"){
                 parameter("path", "/namespace0")
                 header("Authorization", "OAuth " + TEST_ACCESS_TOKEN)
